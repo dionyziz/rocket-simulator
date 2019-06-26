@@ -1,0 +1,23 @@
+{
+  "name": "rocket-simulator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "contributors": [
+    {
+      "name": "Themis Papameletiou",
+      "email": "themicp@gmail.com"
+    },
+    {
+      "name": "Dionysis Zindros",
+      "email": "dionyziz@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@types/assert": "^1.4.2",
+    "assert": "^2.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "ramda": "^0.26.1"
+  }
+}
