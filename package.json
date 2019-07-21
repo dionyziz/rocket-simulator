@@ -13,11 +13,19 @@
     }
   ],
   "license": "MIT",
+  "scripts": {
+    "test": "mocha --require ts-node/register tests/*"
+  },
+  "types": "index.d.ts",
   "dependencies": {
     "@types/assert": "^1.4.2",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7",
     "assert": "^2.0.0",
     "chai": "^4.2.0",
     "mocha": "^6.1.4",
-    "ramda": "^0.26.1"
+    "ramda": "^0.26.1",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
   }
 }

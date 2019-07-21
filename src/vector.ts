@@ -1,15 +1,29 @@
 import R from 'ramda'
 import { Matrix } from './matrix'
 import assert from 'assert'
+import { equals } from './utils'
 
 export class Vector {
-  constructor(public data: number[]) {}
+  public data: number[]
+
+  constructor(...args: number[]) {
+    this.data = args
+  }
   scale(r: number): Vector {
-    return new Vector(this.data.map(R.multiply(r)))
+    return this.map(R.multiply(r))
   }
   add(other: Vector): Vector {
     assert(this.data.length == other.data.length)
-    return new Vector(R.zipWith(R.add, this.data, other.data))
+    return new Vector(...R.zipWith(R.add, this.data, other.data))
+  }
+  map(f: (x: number) => number): Vector {
+    return new Vector(...this.data.map(f))
+  }
+  negate(): Vector {
+    return this.map(R.negate)
+  }
+  subtract(other: Vector): Vector {
+    return this.add(other.negate())
   }
   dot(other: Vector): number {
     assert(this.data.length == other.data.length)
@@ -24,8 +38,8 @@ export class Vector {
   toMatrix(): Matrix {
     return new Matrix(this.data.map(x => [x]))
   }
-  equal(other: Vector): boolean {
-    return R.zipWith(R.equals, this.data, other.data).reduce(R.and)
+  equals(other: Vector): boolean {
+    return R.zipWith(equals, this.data, other.data).reduce(R.and)
   }
   length(): number {
     return Math.sqrt(R.sum(this.data.map(x => x * x)))
@@ -34,14 +48,17 @@ export class Vector {
 
 export class Vector3D extends Vector {
   constructor(public x: number, public y: number, public z: number) {
-    super([x, y, z])
+    super(x, y, z)
   }
-  scale(r: number): Vector3D {
-    return super.scale(r) as Vector3D
+  lift<T extends Array<any>>(f: (...args: T) => Vector): (...args: T) => Vector3D {
+    return (...args: T) => {
+      return Vector3D.fromVector(f.apply(this, args))
+    }
   }
-  add(other: Vector3D): Vector3D {
-    return super.add(other) as Vector3D
-  }
+  scale = this.lift(super.scale)
+  add = this.lift(super.add)
+  negate = this.lift(super.negate)
+  subtract = this.lift(super.subtract)
   cross(other: Vector3D | Vector2D): Vector3D {
     if (other instanceof Vector2D) {
       return this.cross(other.to3D())
@@ -52,18 +69,24 @@ export class Vector3D extends Vector {
       this.data[0] * other.data[1] - this.data[1] * other.data[0]
     )
   }
+  static fromVector(vector: Vector): Vector3D {
+    return new Vector3D(vector.data[0], vector.data[1], vector.data[2])
+  }
 }
 
 export class Vector2D extends Vector {
   constructor(public x: number, public y: number) {
-    super([x, y])
+    super(x, y)
   }
-  scale(r: number): Vector2D {
-    return super.scale(r) as Vector2D
+  lift<T extends Array<any>>(f: (...args: T) => Vector): (...args: T) => Vector2D {
+    return (...args: T) => {
+      return Vector2D.fromVector(f.apply(this, args))
+    }
   }
-  add(other: Vector2D): Vector2D {
-    return super.add(other) as Vector2D
-  }
+  scale = this.lift(super.scale)
+  add = this.lift(super.add)
+  negate = this.lift(super.negate)
+  subtract = this.lift(super.subtract)
   rotate(angle: number): Vector2D {
     let rotationMatrix = new Matrix([
       [Math.cos(angle), -Math.sin(angle)],
@@ -80,5 +103,8 @@ export class Vector2D extends Vector {
   }
   static fromPolar(length: number, angle: number): Vector2D {
     return (new Vector2D(length, 0)).rotate(angle)
+  }
+  static fromVector(vector: Vector): Vector2D {
+    return new Vector2D(vector.data[0], vector.data[1])
   }
 }
